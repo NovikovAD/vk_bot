@@ -1,0 +1,74 @@
+import random
+import vk_api
+from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+
+vk_session = vk_api.VkApi(token='vk1.a.qezXB0DSmkusjxDVOVluGRSa7NIkEhULpiSYIJEWaq6uzpAovVWQ_TBrxsW-CtMjNji5mo9Yd4eZa2y6LlUjE_R5axbc8Mwi4THrK1Lls_a1wdVWqmrfsNtAssvhcF4tqxRAAHk1cN82Mwl3bumkglPSYXfKRinE7RM2daMEiuVsv8_hK2I7DEtyOPyyAb_X')
+session = vk_session.get_api()
+longpoll = VkLongPoll(vk_session)
+
+text_hs = "Хмм... Кажется мне нужно освежить мою память! Как хорошо, что на презентации Студенческого совета"\
+          " 12 сентября в 19:00 в Конгресс-центре будут представлены все составляющие Студенческого совета и"\
+          " ребята лично смогут ответить на твои вопросы на ярмарке сразу после. Увидимся там!"
+
+text_dr = "Мы - неравнодушные кодеры и прогеры, которые хотят сделать студенческую жизнь плехановцев удобнее"\
+          ", круче и веселее. Один из наших первых проектов - чат-бот помогающий найти свободную аудиторию в РЭУ."
+
+
+keyboard1 = VkKeyboard(one_time=True)
+keyboard1.add_button('Студенческие советы Высших школ', color=VkKeyboardColor.POSITIVE)
+keyboard1.add_button('Общеуниверситетские проекты', color=VkKeyboardColor.POSITIVE)
+keyboard1.add_line()
+keyboard1.add_button('Студенческие объединения и общежития', color=VkKeyboardColor.POSITIVE)
+keyboard1.add_button('Внешние связи и коммуникации', color=VkKeyboardColor.POSITIVE)
+
+
+keyboard2 = VkKeyboard(one_time=True)
+keyboard2.add_button('Высшая школа экономики и бизнеса', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_button('Высшая школа финансов', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_line()
+keyboard2.add_button('Высшая инженерная школа «Новые материалы', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_button('Факультет бизнеса «Капитаны»', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_line()
+keyboard2.add_button('Институт первая академия медиа', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_button('Высшая школа социально-гуманитарных наук', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_line()
+keyboard2.add_button('Высшая школа права', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_button('Высшая школа менеджмента', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_line()
+keyboard2.add_button('Высшая школа кибертехнологий математики', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_button('Факультет дистанционного образования ', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_line()
+keyboard2.add_button('Директор «It-center»', color=VkKeyboardColor.POSITIVE)
+keyboard2.add_button('Руководитель Студенческого бизнес-сообще', color=VkKeyboardColor.POSITIVE)
+
+
+def sender1(id, text):
+    session.messages.send(user_id=id, message=text, random_id=0, keyboard=keyboard1.get_keyboard())
+    
+
+def sender2(id, text):
+    session.messages.send(user_id=id, message=text, random_id=0, keyboard=keyboard2.get_keyboard())
+
+
+
+for event in longpoll.listen():
+    if event.type == VkEventType.MESSAGE_NEW:
+        if event.to_me:
+            msg = event.text.lower()
+            id = event.user_id
+
+
+            if msg == 'начать':
+                sender1(id, 'О чём ты хочешь узнать?')
+            elif msg == 'студенческие советы высших школ':
+                sender2(id, 'Какая высшая школа или институт тебя интересуют?')
+            elif ('высшая школа' in msg or 'бизнес' in msg) and 'социально' not in msg:
+                session.messages.send(user_id=id, message=text_hs, random_id=0)
+            elif 'социально' in msg:
+                session.messages.send(user_id=id, message='Направления работы: Медиа Наука Психология Абитуриенты Спорт Добрые дела Группа поддержки', random_id=0)
+            elif 'директор' in msg:
+                session.messages.send(user_id=id, message=text_dr, random_id=0)
+            
+            else:
+                vk_session.method("messages.send", {"user_id": id,"message": f"ниче не понял","random_id": 0})
